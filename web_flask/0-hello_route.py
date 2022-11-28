@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" Starts a web app using flask, listening on port 5000 """
+""" Starts a web app with flask, listening on port 5000 """
 
 from flask import Flask
 app = Flask(__name__)
