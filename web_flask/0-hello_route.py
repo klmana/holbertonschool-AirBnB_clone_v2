@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 
 @app.route("/", strict_slashes=False)
-def hell0():
+def hello():
     """
       Returns text when route is called
     """
