@@ -37,7 +37,6 @@ class DBStorage():
             os.getenv('HBNB_MYSQL_DB'),
             pool_pre_ping=True))
 
-        ## Drop all tables is test_user for QOL.
         if os.getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(bind=self.__engine)
 
@@ -81,15 +80,12 @@ class DBStorage():
             for instance in all_instances:
                 if obj == instance:
                     self.__session.delete(obj)
-                    self.save()                  
-
-
+                    self.save()
 
     def reload(self):
         """
           Reload the database
         """
-
         Base.metadata.create_all(self.__engine)
         session_factory = sessionmaker(
             bind=self.__engine, expire_on_commit=False)
