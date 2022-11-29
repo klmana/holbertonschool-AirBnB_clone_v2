@@ -61,20 +61,25 @@ class FileStorage:
           Loads storage dictionary from file
         """
         try:
-            temp = {}
-            with open(FileStorage.__file_path, 'r') as f:
-                temp = json.load(f)
-                for key, val in temp.items():
-                    self.all()[key] = classes[val['__class__']](**val)
+            with open(FileStorage.__file_path, encoding="UTF8") as fd:
+                FileStorage.__objects = json.load(fd)
+            for key, val in FileStorage.__objects.items():
+                class_name = val["__class__"]
+                class_name = models.classes[class_name]
+                FileStorage.__objects[key] = class_name(**val)
         except FileNotFoundError:
             pass
 
     def delete(self, obj=None):
-        '''Delete an object if it exists in Filestroage'''
-        if obj is not None:
-            obj_name = obj.__class__.__name__ + '.' + obj.id
-            if obj_name in self.__objects:
-                del self.__objects[obj_name]
+        """
+          Delete an object if it exists in Filestroage
+        """
+        if obj:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            self.__objects.pop(key)
+            self.save()
+        else:
+            return
 
     def close(self):
         """
