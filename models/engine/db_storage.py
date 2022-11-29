@@ -30,66 +30,65 @@ class DBStorage():
         """
           Creates the engine for SQLALCHEMY.
         """
-        dialect = 'mysql'
-        driver = 'mysqldb'
-        sql_user = getenv('HBNB_MYSQL_USER')
-        sql_pass = getenv('HBNB_MYSQL_PWD')
-        sql_host = getenv('HBNB_MYSQL_HOST')
-        sql_db = getenv('HBNB_MYSQL_DB')
-        self.__engine = create_engine(
-            f"mysql+mysqldb://{sql_user}:{sql_pass}@{sql_host}/{sql_db}",
-            pool_pre_ping=True
-        )
+        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.format(
+            os.getenv('HBNB_MYSQL_USER'),
+            os.getenv('HBNB_MYSQL_PWD'),
+            os.getenv('HBNB_MYSQL_HOST'),
+            os.getenv('HBNB_MYSQL_DB'),
+            pool_pre_ping=True))
 
-        # Drop all tables is test_user for QOL.
-        if getenv('HBNB_ENV') == 'test':
+        ## Drop all tables is test_user for QOL.
+        if os.getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(bind=self.__engine)
 
     def all(self, cls=None):
         """
-        Queries the Database, depending on the object passed through.
-        if cls=None, queries all types of objects & returns as dict similar to
-        Filestorage.
-        key = <class-name>.<object-id>
-        value = obj.
+          get dictionary of all objects
         """
-        obj_dict = {}
-        class_dict = {
-            'State': State, 'City': City, 'User': User,
-            'Place': Place, 'Review': Review
-        }
-        delete = []
-        """
-          Add classes that aren't == cls and delete from class_dict
-        """
-        if cls is not None:
-            for k, v in class_dict.items():
-                if k != cls:
-                    delete.append(k)
 
-            for k in delete:
-                del class_dict[k]
+        if cls is None:
+            all_list = []
+            for x in BaseModel.__subclasses__():
+                all_list.extend(self.__session.query(x).all())
+            return {"{}.{}".format(type(obj).__name__, obj.id): obj
+                    for obj in all_list}
 
-        for cls in class_dict:
-            query = self.__session.query(class_dict[cls]).all()
-            for row in query:
-                id = row.id
-                key = f'{row.__class__.__name__}.{id}'
-                delattr(row, '_sa_instance_state')
-                obj_dict[key] = row
-        return obj_dict
+        if type(cls) is str:
+            cls = eval(cls)
+
+        return {"{}.{}".format(type(obj).__name__, obj.id): obj
+                for obj in self.__session.query(cls).all()}
 
     def new(self, obj):
+        """
+          insert new object in current database session
+        """
         self.__session.add(obj)
 
     def save(self):
+        """
+          commit changes to database
+        """
         self.__session.commit()
 
     def delete(self, obj=None):
+        """
+          delete from current database session
+        """
+
         if obj is not None:
-            self.__session().delete(obj)
+            all_instances = self.__session.query(obj.__class__.__name__).all()
+            for instance in all_instances:
+                if obj == instance:
+                    self.__session.delete(obj)
+                    self.save()                  
+
+
 
     def reload(self):
+        """
+          Reload the database
+        """
 
         Base.metadata.create_all(self.__engine)
         session_factory = sessionmaker(
