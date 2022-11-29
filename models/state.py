@@ -27,8 +27,6 @@ class State(BaseModel, Base):
             """
               The list of City objects from storage linked to the current State
             """
-
-            cities = storage.all(City).values()
             city_list = []
             for city in models.storage.all("City").values():
                 if city.state_id == self.id:

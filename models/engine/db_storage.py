@@ -14,6 +14,7 @@ from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
+import models
 
 
 class DBStorage():
@@ -98,4 +99,4 @@ class DBStorage():
          call remove() method on the private session attribute
          (self.__session) or close() on the class Session
         """
-        self.__session.remove()
+        self.__session.close()
