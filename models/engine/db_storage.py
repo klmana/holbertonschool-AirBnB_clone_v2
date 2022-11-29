@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-'''Module contains the engine for the db storage.'''
+"""
+  Module contains the engine for the db storage.
+"""
 
 from models.review import Review
 from models.amenity import Amenity
@@ -10,16 +12,21 @@ from models.user import User
 from models.base_model import BaseModel, Base
 from os import getenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 
 
 class DBStorage():
-    '''Attributes will get system info to start engine.'''
+    """
+      Attributes will get system info to start engine.
+    """
     __engine = None
     __session = None
 
     def __init__(self):
-        '''Creates the engine for SQLALCHEMY.'''
+        """
+          Creates the engine for SQLALCHEMY.
+        """
         dialect = 'mysql'
         driver = 'mysqldb'
         sql_user = getenv('HBNB_MYSQL_USER')
@@ -36,20 +43,22 @@ class DBStorage():
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        '''
+        """
         Queries the Database, depending on the object passed through.
         if cls=None, queries all types of objects & returns as dict similar to
         Filestorage.
         key = <class-name>.<object-id>
         value = obj.
-        '''
+        """
         obj_dict = {}
         class_dict = {
             'State': State, 'City': City, 'User': User,
             'Place': Place, 'Review': Review
         }
         delete = []
-        '''Add classes that aren't == cls and delete from class_dict'''
+        """
+          Add classes that aren't == cls and delete from class_dict
+        """
         if cls is not None:
             for k, v in class_dict.items():
                 if k != cls:
@@ -90,3 +99,10 @@ class DBStorage():
         Session = scoped_session(sessionmaker(bind=self.__engine,
                                               expire_on_commit=False))
         self.__session = Session()
+
+    def close(self):
+        """
+         call remove() method on the private session attribute
+         (self.__session) or close() on the class Session
+        """
+        self.__session.remove()
