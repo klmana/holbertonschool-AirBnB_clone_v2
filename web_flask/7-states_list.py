@@ -14,9 +14,8 @@ def states():
     """
       access File/DB Storage for all State objects and render to HTML
     """
-
     return render_template(
-        states=[st for st in storage.all('State').values()])
+     '7-states_list.html', states=[st for st in storage.all('State').values()])
 
 
 @app.teardown_appcontext
